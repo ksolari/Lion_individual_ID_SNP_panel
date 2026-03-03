@@ -1,0 +1,53 @@
+##map WGS data to referecne using BWA MEM
+ml biology bwa
+ml biology samtools
+bwa mem -t 16 ../Lion_SNPcalls/lion_hap2X_out_JBAT_nov18.debris.reorder2_hap1Yadd.FINAL.fa 18032FL-176-05-01_S17_L005_R1_001.fastq.gz 18032FL-176-05-01_S17_L005_R2_001.fastq.gz | samtools view -bS - | samtools sort - > ../LionSNPpanel_RUN_data/WGSdata/Rafiki_ISE_sorted.bam
+bwa mem -t 16 ../Lion_SNPcalls/lion_hap2X_out_JBAT_nov18.debris.reorder2_hap1Yadd.FINAL.fa 18032FL-176-05-02_S18_L005_R1_001.fastq.gz 18032FL-176-05-02_S18_L005_R2_001.fastq.gz | samtools view -bS - | samtools sort - > ../LionSNPpanel_RUN_data/WGSdata/Athos_ISE_sorted.bam
+bwa mem -t 16 ../Lion_SNPcalls/lion_hap2X_out_JBAT_nov18.debris.reorder2_hap1Yadd.FINAL.fa 18032FL-176-05-03_S19_L005_R1_001.fastq.gz 18032FL-176-05-03_S19_L005_R2_001.fastq.gz | samtools view -bS - | samtools sort - > ../LionSNPpanel_RUN_data/WGSdata/Madiba_ISE_sorted.bam
+bwa mem -t 16 ../Lion_SNPcalls/lion_hap2X_out_JBAT_nov18.debris.reorder2_hap1Yadd.FINAL.fa 18032FL-176-05-04_S20_L005_R1_001.fastq.gz 18032FL-176-05-04_S20_L005_R2_001.fastq.gz | samtools view -bS - | samtools sort - > ../LionSNPpanel_RUN_data/WGSdata/Lambert_ISE_sorted.bam
+bwa mem -t 16 ../Lion_SNPcalls/lion_hap2X_out_JBAT_nov18.debris.reorder2_hap1Yadd.FINAL.fa 18032FL-176-05-05_S21_L005_R1_001.fastq.gz 18032FL-176-05-05_S21_L005_R2_001.fastq.gz | samtools view -bS - | samtools sort - > ../LionSNPpanel_RUN_data/WGSdata/Timba_ISE_sorted.bam
+
+##calculate the average depth of coverage using samtools
+ml biology samtools
+samtools depth -a Athos_ISE_sorted.bam | awk '{c++;s+=$3}END{print s/c}'
+samtools depth -a Lambert_ISE_sorted.bam | awk '{c++;s+=$3}END{print s/c}'
+samtools depth -a Madiba_ISE_sorted.bam | awk '{c++;s+=$3}END{print s/c}'
+samtools depth -a Rafiki_ISE_sorted.bam | awk '{c++;s+=$3}END{print s/c}'
+samtools depth -a Timba_ISE_sorted.bam | awk '{c++;s+=$3}END{print s/c}'
+
+##calculate the breadth of coverage (what fraction of the genome is sequenced) using samtools
+ml biology samtools
+samtools depth -a Athos_ISE_sorted.bam | awk '{c++; if($3>0) total+=1}END{print (total/c)*100}'
+samtools depth -a Lambert_ISE_sorted.bam | awk '{c++; if($3>0) total+=1}END{print (total/c)*100}'
+samtools depth -a Madiba_ISE_sorted.bam | awk '{c++; if($3>0) total+=1}END{print (total/c)*100}'
+samtools depth -a Rafiki_ISE_sorted.bam | awk '{c++; if($3>0) total+=1}END{print (total/c)*100}'
+samtools depth -a Timba_ISE_sorted.bam | awk '{c++; if($3>0) total+=1}END{print (total/c)*100}'
+
+##extract only the target amplicon regions from the bam files 
+ml biology bedtools
+bedtools intersect -a Athos_ISE_sorted.bam -b ../Lion_SNP_Amp_Blocks.bed > Athos_ISE_sortedAmpliconOnly.bam
+bedtools intersect -a Lambert_ISE_sorted.bam -b ../Lion_SNP_Amp_Blocks.bed > Lambert_ISE_sortedAmpliconOnly.bam
+bedtools intersect -a Madiba_ISE_sorted.bam -b ../Lion_SNP_Amp_Blocks.bed > Madiba_ISE_sortedAmpliconOnly.bam
+bedtools intersect -a Rafiki_ISE_sorted.bam -b ../Lion_SNP_Amp_Blocks.bed > Rafiki_ISE_sortedAmpliconOnly.bam
+bedtools intersect -a Timba_ISE_sorted.bam -b ../Lion_SNP_Amp_Blocks.bed > Timba_ISE_sortedAmpliconOnly.bam
+
+##index with samtools
+samtools index Athos_ISE_sortedAmpliconOnly.bam
+samtools index Lambert_ISE_sortedAmpliconOnly.bam
+samtools index Madiba_ISE_sortedAmpliconOnly.bam
+samtools index Rafiki_ISE_sortedAmpliconOnly.bam
+samtools index Timba_ISE_sortedAmpliconOnly.bam
+
+##make SNP calls
+ml biology bcftools
+ml biology vcftools
+ls *AmpliconOnly.bam > SortedBamList.txt
+bcftools mpileup -A -a AD,DP -R ../Lion_SNPs_3bp.bed -f ../../Lion_SNPcalls/lion_hap2X_out_JBAT_nov18.debris.reorder2_hap1Yadd.FINAL.fa -b SortedBamList.txt  | bcftools call -m -Oz -f GQ -o Lion_WGS_calls_noDepthLimit_AD_DP_GQ_noV_3bp.vcf
+vcftools --vcf Lion_WGS_calls_noDepthLimit_AD_DP_GQ_noV_3bp.vcf --out Lion_WGS_calls_noDepthLimit_AD_DP_GQ_noV_1bp --bed ../Lion_SNPs_1bp.bed --recode
+
+##filter SNP calls for GQ of 20 and DP of 20
+vcftools --vcf Lion_WGS_calls_noDepthLimit_AD_DP_GQ_noV_1bp.recode.vcf --out Lion_WGS_calls_noDepthLimit_AD_DP_GQ_noV_1bp_GQ20 --minGQ 20 --minDP 20  --recode
+
+
+
+
