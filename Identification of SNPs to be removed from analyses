@@ -1,0 +1,17 @@
+###split vcf into autosomes and X-chromosome
+vcftools --vcf Lion_SNPs_1bp_minDP15minGQ20.recode.vcf --out Lion_SNPs_1bp_minDP15minGQ20_X --chr scaffold_19 --recode
+vcftools --vcf Lion_SNPs_1bp_minDP15minGQ20.recode.vcf --out Lion_SNPs_1bp_minDP15minGQ20_Auto --not-chr scaffold_19 --recode
+
+###split Autosome VCF up by sample group
+vcftools --vcf Lion_SNPs_1bp_minDP15minGQ20_Auto.recode.vcf --out Lion_SNPs_1bp_minDP15minGQ20_Auto_Kafue --keep Kafue_runs_ALL.txt --recode
+vcftools --vcf Lion_SNPs_1bp_minDP15minGQ20_Auto.recode.vcf --out Lion_SNPs_1bp_minDP15minGQ20_Auto_Zakouma --keep Zakouma_runs_ALL.txt --recode
+vcftools --vcf Lion_SNPs_1bp_minDP15minGQ20_Auto.recode.vcf --out Lion_SNPs_1bp_minDP15minGQ20_Auto_Captive --keep Captive_runs_ALL.txt --recode
+
+###calculate HWE within Zakouma and Kafue seperately
+plink2 --vcf Lion_SNPs_1bp_minDP15minGQ20_Auto_Kafue.recode.vcf --out Lion_SNPs_1bp_minDP15minGQ20_Auto_Kafue_HWEplink --hardy --allow-extra-chr --double-id 
+plink2 --vcf Lion_SNPs_1bp_minDP15minGQ20_Auto_Zakouma.recode.vcf --out Lion_SNPs_1bp_minDP15minGQ20_Auto_Zakouma_HWEplink --hardy --allow-extra-chr --double-id 
+
+###identify which SNPs are monomorphic across all runs
+vcftools --vcf Lion_SNPs_1bp_minDP15minGQ20_Auto.recode.vcf --out Lion_SNPs_1bp_minDP15minGQ20_Auto_freq --freq
+vcftools --vcf Lion_SNPs_1bp_minDP15minGQ20_X.recode.vcf --out Lion_SNPs_1bp_minDP15minGQ20_X_freq --freq
+
