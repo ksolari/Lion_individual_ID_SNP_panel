@@ -1,0 +1,27 @@
+###calculate number of reads in initial mapping
+samtools flagstat Run1_sorted.bam
+
+###Calculate the number of reads after removing reads with a mapping quality of zero and off target reads
+samtools flagstat Run1_sorted_MQ1_AmpliconOnly.bam
+
+###calculate the read depth for each SNP in each sample:
+bedtools multicov -bams Run1_sorted_MQ1_AmpliconOnly.bam Run2_sorted_MQ1_AmpliconOnly.bam ....... -bed Lion_SNPs_1bp.bed > Lion_mPCR_amplicon_coverage_1bp_ALLsamples.txt
+
+###calculate heterzygosity in all samples just for autosomal SNPs after removing 9 questionable SNPs:
+vcftools --vcf Lion_SNPs_1bp_minDP15minGQ20_Auto.recode.vcf --out Lion_SNPs_1bp_minDP15minGQ20_Auto_minus9snps --exclude-positions Exclude_9snps.txt --recode
+plink2 --vcf Lion_SNPs_1bp_minDP15minGQ20_Auto_minus9snps.recode.vcf --freq  --allow-extra-chr --out Lion_SNPs_1bp_minDP15minGQ20_Auto_minus9snps
+plink2 --vcf Lion_SNPs_1bp_minDP15minGQ20_Auto_minus9snps.recode.vcf --read-freq Lion_SNPs_1bp_minDP15minGQ20_Auto_minus9snps.afreq --out Lion_SNPs_1bp_minDP15minGQ20_Auto_minus9snps --allow-extra-chr --het --set-all-var-ids @:# 
+
+##Calculate the minot allele frequency for each autosomal SNPs in each sample group seperately:
+vcftools --vcf Lion_SNPs_1bp_minDP15minGQ20_Auto_Kafue_minus9SNPs_16min.recode.vcf --out Lion_SNPs_1bp_minDP15minGQ20_Auto_Kafue_minus9SNPs_16min --freq
+vcftools --vcf Lion_SNPs_1bp_minDP15minGQ20_Auto_Zakouma_minus9SNPs_16min.recode.vcf --out Lion_SNPs_1bp_minDP15minGQ20_Auto_Zakouma_minus9SNPs_16min --freq
+vcftools --vcf Lion_SNPs_1bp_minDP15minGQ20_Auto_Captive_minus9SNPs_16min.recode.vcf --out Lion_SNPs_1bp_minDP15minGQ20_Auto_Captive_minus9SNPs_16min --freq
+
+###calculate the amount of overlap between SNPs in replicate runs using all runs and assessing autosomal SNPs and X SNPs seperately
+
+vcftools --vcf Lion_SNPs_1bp_minDP15minGQ20_Auto.recode.vcf --out Lion_SNPs_1bp_minDP15minGQ20_Auto_minus9snps --exclude-positions Exclude_9snps.txt --recode
+vcftools --vcf Lion_SNPs_1bp_minDP15minGQ20_X.recode.vcf --out Lion_SNPs_1bp_minDP15minGQ20_X_minus4snps --exclude-positions X_snp.txt --recode
+
+ml biology plink/1.90b5.3
+plink --vcf Lion_SNPs_1bp_minDP15minGQ20_Auto_minus9snps.recode.vcf --out Lion_SNPs_1bp_minDP15minGQ20_Auto_minus9snps_IBS --allow-extra-chr --double-id --genome full 
+plink --vcf Lion_SNPs_1bp_minDP15minGQ20_X_minus4snps.recode.vcf --out Lion_SNPs_1bp_minDP15minGQ20_X_minus4snps_IBS --allow-extra-chr --double-id --genome full 
