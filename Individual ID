@@ -1,0 +1,20 @@
+###remove 9 flagged autosomal SNPs from each vcf
+vcftools --vcf Lion_SNPs_1bp_minDP15minGQ20_Auto_Kafue.recode.vcf --out Lion_SNPs_1bp_minDP15minGQ20_Auto_Kafue_minus9SNPs --exclude-positions Exclude_9snps.txt --recode
+vcftools --vcf Lion_SNPs_1bp_minDP15minGQ20_Auto_Zakouma.recode.vcf --out Lion_SNPs_1bp_minDP15minGQ20_Auto_Zakouma_minus9SNPs --exclude-positions Exclude_9snps.txt --recode
+vcftools --vcf Lion_SNPs_1bp_minDP15minGQ20_Auto_Captive.recode.vcf --out Lion_SNPs_1bp_minDP15minGQ20_Auto_Captive_minus9SNPs --exclude-positions Exclude_9snps.txt --recode
+
+###calculate the missingness for each run
+vcftools --vcf Lion_SNPs_1bp_minDP15minGQ20_Auto_Kafue_minus9SNPs.recode.vcf --out Lion_SNPs_1bp_minDP15minGQ20_Auto_Kafue_minus9SNPs --missing-indv
+vcftools --vcf Lion_SNPs_1bp_minDP15minGQ20_Auto_Zakouma_minus9SNPs.recode.vcf --out Lion_SNPs_1bp_minDP15minGQ20_Auto_Zakouma_minus9SNPs --missing-indv
+vcftools --vcf Lion_SNPs_1bp_minDP15minGQ20_Auto_Captive_minus9SNPs.recode.vcf --out Lion_SNPs_1bp_minDP15minGQ20_Auto_Captive_minus9SNPs --missing-indv
+
+###remove runs that have less than 16 SNPs
+vcftools --vcf Lion_SNPs_1bp_minDP15minGQ20_Auto_Kafue_minus9SNPs.recode.vcf --out Lion_SNPs_1bp_minDP15minGQ20_Auto_Kafue_minus9SNPs_16min --remove Kafue_run_lessThan16SNPSw15dp.txt --recode
+vcftools --vcf Lion_SNPs_1bp_minDP15minGQ20_Auto_Zakouma_minus9SNPs.recode.vcf --out Lion_SNPs_1bp_minDP15minGQ20_Auto_Zakouma_minus9SNPs_16min --remove Zakouma_run_lessThan16SNPSw15dp.txt --recode
+vcftools --vcf Lion_SNPs_1bp_minDP15minGQ20_Auto_Captive_minus9SNPs.recode.vcf --out Lion_SNPs_1bp_minDP15minGQ20_Auto_Captive_minus9SNPs_16min --remove Captive_run_lessThan16SNPSw15dp.txt --recode
+
+###Calculate the number of SNPs IBS between each run pair
+ml biology plink/1.90b5.3
+plink --vcf Lion_SNPs_1bp_minDP15minGQ20_Auto_Kafue_minus9SNPs_16min.recode.vcf --out Lion_SNPs_1bp_minDP15minGQ20_Auto_Kafue_minus9SNPs_16min_IBS --allow-extra-chr --double-id --genome full 
+plink --vcf Lion_SNPs_1bp_minDP15minGQ20_Auto_Zakouma_minus9SNPs_16min.recode.vcf --out Lion_SNPs_1bp_minDP15minGQ20_Auto_Zakouma_minus9SNPs_16min_IBS --allow-extra-chr --double-id --genome full 
+plink --vcf Lion_SNPs_1bp_minDP15minGQ20_Auto_Captive_minus9SNPs_16min.recode.vcf --out Lion_SNPs_1bp_minDP15minGQ20_Auto_Captive_minus9SNPs_16min_Captive_IBS --allow-extra-chr --double-id --genome full 
