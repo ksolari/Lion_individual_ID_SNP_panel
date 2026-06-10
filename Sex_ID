@@ -1,0 +1,10 @@
+###looking only at SNPs on X-chromosome
+vcftools --vcf Lion_SNPs_1bp_minDP15minGQ20.recode.vcf --out Lion_SNPs_1bp_minDP15minGQ20_X --chr scaffold_19 --recode
+
+###Remove 4 problematic SNPs (2 with inaccurate genotyping in captive samples and two with no variability across all runs)
+vcftools --vcf Lion_SNPs_1bp_minDP15minGQ20_X.recode.vcf --out Lion_SNPs_1bp_minDP15minGQ20_X_minus4snps --exclude-positions X_snp.txt --recode
+
+###calculate the heterozygosity of each run:
+plink2 --vcf Lion_SNPs_1bp_minDP15minGQ20_X_minus4snps.recode.vcf --freq  --allow-extra-chr --out Lion_SNPs_1bp_minDP15minGQ20_X_minus4snps
+plink2 --vcf Lion_SNPs_1bp_minDP15minGQ20_X_minus4snps.recode.vcf --read-freq Lion_SNPs_1bp_minDP15minGQ20_X_minus4snps.afreq --out Lion_SNPs_1bp_minDP15minGQ20_X_minus4snps --allow-extra-chr --het --set-all-var-ids @:# 
+
