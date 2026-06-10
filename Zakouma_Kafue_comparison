@@ -1,0 +1,17 @@
+# Compress, sort and index autosomal VCF for each population
+bgzip Lion_SNPs_1bp_minDP15minGQ20_Auto_Kafue_minus9SNPs.recode.vcf
+bgzip Lion_SNPs_1bp_minDP15minGQ20_Auto_Zakouma_minus9SNPs.recode.vcf
+
+bcftools sort Lion_SNPs_1bp_minDP15minGQ20_Auto_Kafue_minus9SNPs.recode.vcf.gz -Oz -o Lion_SNPs_1bp_minDP15minGQ20_Auto_Kafue_minus9SNPs_sorted.vcf.gz
+bcftools sort Lion_SNPs_1bp_minDP15minGQ20_Auto_Zakouma_minus9SNPs.recode.vcf.gz -Oz -o Lion_SNPs_1bp_minDP15minGQ20_Auto_Zakouma_minus9SNPs_sorted.vcf.gz
+
+bcftools index Lion_SNPs_1bp_minDP15minGQ20_Auto_Kafue_minus9SNPs_sorted.vcf.gz
+bcftools index Lion_SNPs_1bp_minDP15minGQ20_Auto_Zakouma_minus9SNPs_sorted.vcf.gz
+
+
+# Merge these the two VCFs
+bcftools merge -Oz -o Lion_SNPs_1bp_minDP15minGQ20_Auto_minus9SNPs_ZakoumaANDKafue.vcf.gz Lion_SNPs_1bp_minDP15minGQ20_Auto_Kafue_minus9SNPs_sorted.vcf.gz Lion_SNPs_1bp_minDP15minGQ20_Auto_Zakouma_minus9SNPs_sorted.vcf.gz
+
+# calculate IBS amoung all wild sample runs
+ml biology plink/1.90b5.3
+plink --vcf Lion_SNPs_1bp_minDP15minGQ20_Auto_minus9SNPs_ZakoumaANDKafue.vcf.gz --out Lion_SNPs_1bp_minDP15minGQ20_Auto_minus9SNPs_ZakoumaANDKafue_IBS --allow-extra-chr --double-id --genome full 
